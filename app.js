@@ -1,0 +1,123 @@
+var createError = require("http-errors");
+var express = require("express");
+var path = require("path");
+var cookieParser = require("cookie-parser");
+var logger = require("morgan");
+const { Server } = require("socket.io");
+const http = require("http");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const upload = require("./service/multer");
+const User = require("./modal/user");
+const { addUser, getUser } = require("./controller/user");
+const Messages = require("./modal/messages");
+
+//Mongoose Connection
+mongoose
+  .connect("mongodb://localhost:27017/chatapp")
+  .then(() => {
+    console.log("Connection Successfully");
+  })
+  .catch((err) => {
+    console.log("Received an Error:", err.message);
+  });
+//Routes
+var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/users");
+
+var app = express();
+
+// view engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("/public", path.join(__dirname, "public"));
+app.set("view engine", "jade");
+
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use("/", indexRouter);
+app.use("/users", upload.single("profile"), usersRouter);
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  next(createError(404));
+});
+
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render("error");
+});
+
+const PORT = process.env.PORT || 3030;
+app.set("port", PORT);
+// Cors setup
+const corsOptions = {
+  origin: "*", // Allow all origins
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+//socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+  connectionStateRecovery: {},
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+const unreadMessages = [];
+io.on("connection", async (socket) => {
+  const user = await User.findOneAndUpdate(
+    { fullName: "Maha" },
+    { $set: { status: true } }
+  );
+  socket.emit("userConnected", user);
+  console.log("new user", socket.id);
+  if (user.status === true) {
+    socket.on("sendMessage", async (data) => {
+      const newMessage = new Messages({
+        sender: "1234",
+        content: {
+          body: data.message,
+          status: true,
+        },
+        timestamp: new Date(),
+      });
+      await newMessage.save();
+      io.emit("receivedMessage", data);
+    });
+  }
+  if (user.status === false) {
+    const unreadMessages = await Messages.find({
+      sender: "1234",
+      "content.status": false,
+    });
+    console.log(user);
+    socket.emit("unRead", unreadMessages);
+  }
+
+  socket.on("disconnect", async () => {
+    const user = await User.findOneAndUpdate(
+      { fullName: "Maha" },
+      { $set: { status: false } }
+    );
+    console.log("User disconnected");
+  });
+});
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+module.exports = app;
