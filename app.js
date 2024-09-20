@@ -9,7 +9,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const upload = require("./service/multer");
 const User = require("./modal/user");
-const { addUser, getUser } = require("./controller/user");
+const { addUser } = require("./controller/user");
 const Messages = require("./modal/messages");
 
 //Mongoose Connection
@@ -21,9 +21,13 @@ mongoose
   .catch((err) => {
     console.log("Received an Error:", err.message);
   });
-//Routes
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+
+//Imports Routes
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/users");
+const loginRouter = require("./routes/login");
+const conversationRouter = require("./routes/conversation");
+const messageRouter = require("./routes/messages");
 
 var app = express();
 
@@ -38,8 +42,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+//Routes
 app.use("/", indexRouter);
-app.use("/users", upload.single("profile"), usersRouter);
+app.use("/users", usersRouter);
+app.use("/conversation", conversationRouter);
+app.use("/login", loginRouter);
+app.use("/messages", messageRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

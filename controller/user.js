@@ -1,24 +1,31 @@
 const User = require("../modal/user");
+const bcrypt = require("bcryptjs");
+
 async function addUser(req, res) {
   try {
-    let newUser = await User.create({
-      fullName: req.body.fullName,
-      email: req.body.email,
-      password: req.body.password,
-    });
-
-    res.status(201).json({ msg: "success", user: newUser._id });
+    const { fullName, email, password } = req.body;
+    if (!fullName || !email || !password) {
+      res.status(400).json({ msg: "Please fill required fields" });
+    } else {
+      const isAlreadyExist = await User.findOne({ email: email });
+      if (isAlreadyExist) {
+        res.status(400).json({ msg: "User already exist" });
+      } else {
+        const newUser = await User({
+          fullName: fullName,
+          email: email,
+        });
+        bcrypt.hash(password, 10, (err, hashedPassword) => {
+          newUser.set("password", hashedPassword);
+          newUser.save();
+        });
+        res
+          .status(200)
+          .json({ msg: "User added successfully", user: newUser._id });
+      }
+    }
   } catch (err) {
-    console.error(err);
     res.status(500).json({ msg: "Unable to create user" });
   }
 }
-async function getUser(req, res) {
-  try {
-    const user = User.findOne({ email: "mahasagheer960@gmail.com" });
-    res.status(200).json({ data: user });
-  } catch (err) {
-    res.status(400).json({ msg: "Unable to get user" });
-  }
-}
-module.exports = { addUser, getUser };
+module.exports = { addUser };

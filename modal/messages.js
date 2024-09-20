@@ -2,17 +2,17 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    sender: {
-      type: Number,
+    conversationId: { type: String, required: true },
+    senderId: {
+      type: String,
       required: true,
     },
-    content: {
-      body: { type: String, required: true },
-      status: { type: Boolean, default: false },
-    },
+    receiverId: { type: String, required: true },
+    message: { type: String, required: true },
+    isSeen: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-const Messages = mongoose.model("messages", messageSchema);
+const Messages = mongoose.model("Messages", messageSchema);
 module.exports = Messages;
