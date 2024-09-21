@@ -28,4 +28,21 @@ async function addUser(req, res) {
     res.status(500).json({ msg: "Unable to create user" });
   }
 }
-module.exports = { addUser };
+
+async function getAllUsers(req, res) {
+  try {
+    const users = await User.find();
+    const user = Promise.all(
+      users.map(async (userData) => {
+        return {
+          user: { email: userData.email, fullName: userData.fullName },
+          userId: userData._id,
+        };
+      })
+    );
+    return res.status(200).json(await user);
+  } catch (err) {
+    return res.status(500).json({ msg: "Error in fetching all users" });
+  }
+}
+module.exports = { addUser, getAllUsers };

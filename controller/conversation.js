@@ -34,11 +34,10 @@ async function fetchConversation(req, res) {
           return res.status(200).json({
             msg: "Conversation fetched successfully",
             conversationId: conversation._id,
-            conversation: {
-              fullName: user.fullName,
-              email: user.email,
-              status: user.status,
-            },
+            receiverId: receiverId,
+            fullName: user.fullName,
+            email: user.email,
+            status: user.status,
           });
         })
       );

@@ -42,6 +42,7 @@ async function userLogin(req, res) {
             data: {
               fullName: findUser.fullName,
               email: findUser.email,
+              userId: findUser._id,
             },
             token: findUser.token,
           });

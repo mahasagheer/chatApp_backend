@@ -30,7 +30,7 @@ const conversationRouter = require("./routes/conversation");
 const messageRouter = require("./routes/messages");
 
 var app = express();
-
+app.use(cors());
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("/public", path.join(__dirname, "public"));
@@ -86,41 +86,12 @@ const io = new Server(server, {
   },
 });
 const unreadMessages = [];
-io.on("connection", async (socket) => {
-  const user = await User.findOneAndUpdate(
-    { fullName: "Maha" },
-    { $set: { status: true } }
-  );
-  socket.emit("userConnected", user);
+io.on("connection", (socket) => {
   console.log("new user", socket.id);
-  if (user.status === true) {
-    socket.on("sendMessage", async (data) => {
-      const newMessage = new Messages({
-        sender: "1234",
-        content: {
-          body: data.message,
-          status: true,
-        },
-        timestamp: new Date(),
-      });
-      await newMessage.save();
-      io.emit("receivedMessage", data);
-    });
-  }
-  if (user.status === false) {
-    const unreadMessages = await Messages.find({
-      sender: "1234",
-      "content.status": false,
-    });
-    console.log(user);
-    socket.emit("unRead", unreadMessages);
-  }
-
+  socket.on("sendMessage", async (data) => {
+    io.emit("receivedMessage", data);
+  });
   socket.on("disconnect", async () => {
-    const user = await User.findOneAndUpdate(
-      { fullName: "Maha" },
-      { $set: { status: false } }
-    );
     console.log("User disconnected");
   });
 });
