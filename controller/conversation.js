@@ -31,16 +31,17 @@ async function fetchConversation(req, res) {
             (member) => member !== userId
           );
           const user = await User.findById(receiverId);
-          return res.status(200).json({
+          return {
             msg: "Conversation fetched successfully",
             conversationId: conversation._id,
             receiverId: receiverId,
             fullName: user.fullName,
             email: user.email,
             status: user.status,
-          });
+          };
         })
       );
+      return res.status(200).json(await userDetailConversation);
     }
   } catch (err) {
     return res

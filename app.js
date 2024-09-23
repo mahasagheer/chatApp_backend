@@ -11,6 +11,7 @@ const upload = require("./service/multer");
 const User = require("./modal/user");
 const { addUser } = require("./controller/user");
 const Messages = require("./modal/messages");
+const { initSocket } = require("./service/socketservice");
 
 //Mongoose Connection
 mongoose
@@ -76,25 +77,17 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-//socket.io
 const server = http.createServer(app);
-const io = new Server(server, {
-  connectionStateRecovery: {},
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
-const unreadMessages = [];
-io.on("connection", (socket) => {
-  console.log("new user", socket.id);
-  socket.on("sendMessage", async (data) => {
-    io.emit("receivedMessage", data);
-  });
-  socket.on("disconnect", async () => {
-    console.log("User disconnected");
-  });
-});
+//socket.io
+// Initialize Socket.IO
+initSocket(server);
+
+// socket.on("sendMessage", async (data) => {
+//   io.emit("receivedMessage", data);
+// });
+// socket.on("disconnect", async () => {
+//   console.log("User disconnected");
+// });
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

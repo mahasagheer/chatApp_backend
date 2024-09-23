@@ -31,11 +31,13 @@ async function addUser(req, res) {
 
 async function getAllUsers(req, res) {
   try {
-    const users = await User.find();
+    const userId = req.params.userId;
+    const users = await User.find({ _id: { $ne: userId } });
     const user = Promise.all(
       users.map(async (userData) => {
         return {
-          user: { email: userData.email, fullName: userData.fullName },
+          email: userData.email,
+          fullName: userData.fullName,
           userId: userData._id,
         };
       })
