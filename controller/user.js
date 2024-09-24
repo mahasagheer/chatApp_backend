@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 async function addUser(req, res) {
   try {
     const { fullName, email, password } = req.body;
+    const profilePic = req.file.filename;
     if (!fullName || !email || !password) {
       res.status(400).json({ msg: "Please fill required fields" });
     } else {
@@ -14,6 +15,7 @@ async function addUser(req, res) {
         const newUser = await User({
           fullName: fullName,
           email: email,
+          profilePic: profilePic,
         });
         bcrypt.hash(password, 10, (err, hashedPassword) => {
           newUser.set("password", hashedPassword);
@@ -39,6 +41,8 @@ async function getAllUsers(req, res) {
           email: userData.email,
           fullName: userData.fullName,
           userId: userData._id,
+          status: userData.status,
+          profilePic: userData.profilePic,
         };
       })
     );

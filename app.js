@@ -42,10 +42,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static("uploads"));
 
 //Routes
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/users", upload.single("profilePic"), usersRouter);
 app.use("/conversation", conversationRouter);
 app.use("/login", loginRouter);
 app.use("/messages", messageRouter);
@@ -78,16 +79,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 const server = http.createServer(app);
-//socket.io
 // Initialize Socket.IO
 initSocket(server);
 
-// socket.on("sendMessage", async (data) => {
-//   io.emit("receivedMessage", data);
-// });
-// socket.on("disconnect", async () => {
-//   console.log("User disconnected");
-// });
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

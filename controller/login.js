@@ -1,5 +1,6 @@
 const User = require("../modal/user");
 const bcrypt = require("bcryptjs");
+const { profile } = require("console");
 const jwt = require("jsonwebtoken");
 
 async function userLogin(req, res) {
@@ -43,6 +44,7 @@ async function userLogin(req, res) {
               fullName: findUser.fullName,
               email: findUser.email,
               userId: findUser._id,
+              profilePic: findUser.profilePic,
             },
             token: findUser.token,
           });
