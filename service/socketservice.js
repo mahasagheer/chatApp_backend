@@ -21,18 +21,6 @@ const initSocket = (httpServer) => {
       console.error(`Error updating user status: ${error}`);
     }
   };
-  // const offlineStatus = async (userId) => {
-  //   try {
-  //     const userStatus = await User.findOneAndUpdate(
-  //       { _id: userId },
-  //       {
-  //         status: false,
-  //       }
-  //     );
-  //   } catch (err) {
-  //     console.error(`Error updating user status: ${error}`);
-  //   }
-  // };
   io.on("connection", (socket) => {
     console.log("new user", socket.id);
     socket.on("addUser", (id) => {

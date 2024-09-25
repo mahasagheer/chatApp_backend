@@ -1,4 +1,3 @@
-const { Email } = require("@mui/icons-material");
 const Conversation = require("../modal/conversation");
 const User = require("../modal/user");
 async function startConversation(req, res) {
@@ -38,6 +37,7 @@ async function fetchConversation(req, res) {
             fullName: user.fullName,
             email: user.email,
             status: user.status,
+            profilePic: user.profilePic,
           };
         })
       );

@@ -41,12 +41,6 @@ async function sendMessages(req, res) {
 
 async function getMessage(req, res) {
   try {
-    const conversationId = req.params.conversationId;
-    const senderId = req.headers.senderid;
-    const receiverId = req.headers.receiverid;
-
-    console.log("Sender ID:", senderId);
-    console.log("Receiver ID:", receiverId);
     const checkMessages = async (conversationId) => {
       const message = await Messages.find({ conversationId: conversationId });
       const messageUserDetail = Promise.all(
@@ -67,11 +61,19 @@ async function getMessage(req, res) {
       );
       res.status(200).json(await messageUserDetail);
     };
+    const conversationId = req.params.conversationId;
+    const senderId = req.headers.senderid;
+    const receiverId = req.headers.receiverid;
+
+    console.log("Sender ID:", senderId);
+    console.log("Receiver ID:", receiverId);
+    console.log("conversation", conversationId);
     if (conversationId === "new") {
       const checkConversationId = await Conversation.find({
         members: { $all: [senderId, receiverId] },
       });
       if (checkConversationId.length > 0) {
+        console.log("check conversation according to id", checkConversationId);
         checkMessages(checkConversationId[0]._id);
       } else {
         return res.status(200).json([]);
