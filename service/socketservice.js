@@ -32,6 +32,12 @@ const initSocket = (httpServer) => {
         io.emit("getUsers", users);
       }
     });
+    socket.on("audioStream", (audioData) => {
+      socket.broadcast.emit("audioStream", audioData);
+    });
+    socket.on("endCall", () => {
+      console.log("BroadCast call end");
+    });
     socket.on(
       "sendMessage",
       ({ senderId, receiverId, conversationId, message }) => {
