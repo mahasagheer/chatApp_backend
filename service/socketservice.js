@@ -21,6 +21,8 @@ const initSocket = (httpServer) => {
       console.error(`Error updating user status: ${error}`);
     }
   };
+  const emailToSocketIdMap = new Map();
+  const socketIdToEmailMap = new Map();
   io.on("connection", (socket) => {
     console.log("new user", socket.id);
     socket.on("addUser", (id) => {
@@ -32,11 +34,43 @@ const initSocket = (httpServer) => {
         io.emit("getUsers", users);
       }
     });
-    socket.on("audioStream", (audioData) => {
-      socket.broadcast.emit("audioStream", audioData);
+    socket.on("join-room", (data) => {
+      const { email, room } = data;
+      emailToSocketIdMap.set(email, socket.id);
+      socketIdToEmailMap.set(socket.id, email);
+      io.to(room).emit("user-joined", { email: email, id: socket.id });
+      socket.join(room);
+      io.to(socket.id).emit("join-room", data);
+    });
+
+    socket.on("user-call", ({ to, offer }) => {
+      console.log("Backend received call:", to, offer); // Check backend
+      io.to(to).emit("incoming-call", { from: socket.id, offer });
+    });
+
+    socket.on("call-accepted", ({ to, answer }) => {
+      console.log("call accepted:", to, answer);
+      io.to(to).emit("call-accepted", {
+        form: socket.id,
+        answer,
+      });
+    });
+    socket.on("peer:nego:needed", ({ to, offer }) => {
+      console.log("peer nego needed", offer);
+      io.to(to).emit("peer:nego:needed", {
+        form: socket.id,
+        offer,
+      });
+    });
+    socket.on("peer:nego:done", ({ to, answer }) => {
+      console.log("peer done", answer);
+      io.to(to).emit("peer:nego:final", {
+        form: socket.id,
+        answer,
+      });
     });
     socket.on("endCall", () => {
-      console.log("BroadCast call end");
+      console.log("Call end");
     });
     socket.on(
       "sendMessage",
@@ -63,6 +97,7 @@ const initSocket = (httpServer) => {
         }
       }
     );
+    console.log(users);
 
     socket.on("disconnect", async () => {
       console.log("user Disconnected");

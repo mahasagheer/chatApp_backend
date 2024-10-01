@@ -73,7 +73,6 @@ async function getMessage(req, res) {
         members: { $all: [senderId, receiverId] },
       });
       if (checkConversationId.length > 0) {
-        console.log("check conversation according to id", checkConversationId);
         checkMessages(checkConversationId[0]._id);
       } else {
         return res.status(200).json([]);
